@@ -22,6 +22,7 @@
 var express =require ('express') ;
 var path =require ('path') ;
 var fs =require ('fs') ;
+var zlib = require('zlib') ;
 var mkdirp =require ('mkdirp') ;
 var moment =require ('moment') ;
 var ForgeSDK =require ('forge-apis') ;
@@ -519,13 +520,11 @@ router.get ('/:urn/properties/*', function (req, res) {
 						zlib.gzip (buf, function (_, result) {
 							res.setHeader ('Content-Length', result.length) ;
 							res.end (result) ;
-							//utils.logTimeStamp (req.params.urn) ;
 						}) ;
 					} else {
 						zlib.deflate (buf, function (_, result) {
 							res.setHeader ('Content-Length', result.length) ;
 							res.end (result) ;
-							//utils.logTimeStamp (req.params.urn) ;
 						}) ;
 					}
 					break ;
