@@ -1,6 +1,6 @@
 {
 	"name": "propertyServer",
-	"description": "propertyServer",
+	"description": "Forge Model PropertyServer to workaround teh Model Derivative API limitations",
 	"repository": "https://github.com/cyrillef/propertyServer.git",
 	"keywords": [
 		"node",
