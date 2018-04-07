@@ -371,6 +371,21 @@ var utils ={
 		return (null) ;
 	},
 
+	csv: function (st) {
+		var dbIds =st.split (',') ; // csv format
+		dbIds =dbIds.map (function (elt) {
+			var r =elt.match (/^(\d+)-(\d+)$/) ;
+			if ( r === null )
+				return (parseInt (elt)) ;
+			var t =[] ;
+			for ( var i =parseInt (r [1]) ; i <= parseInt (r [2]) ; i++ )
+				t.push (i) ;
+			return (t) ;
+		}) ;
+		//return (dbIds) ;
+		return ([].concat.apply ([], dbIds)) ;
+	},
+
 	logTimeStamp: function (msg) {
 		msg =msg || '' ;
 		var date =new Date () ;
@@ -385,5 +400,9 @@ var utils ={
 	}
 
 } ;
+
+// Array.prototype.flatMap =function (lambda) {
+//  	return (Array.prototype.concat.apply ([], this.map (lambda))) ;
+// } ;
 
 module.exports =utils ;

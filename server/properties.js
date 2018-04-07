@@ -103,20 +103,21 @@ class JsonProperties {
 		})) ;
 	}
 
-	// read (dbId) {
-	// 	dbId =parseInt (dbId) ;
-	// 	var result ={
-	// 		id: dbId,
-	// 		guid: this.ids [dbId],
-	// 		props: {},
-	// 		parents: []
-	// 	} ;
-	// 	var parent =this._read (dbId, result) ;
-	// 	while ( parent !== null && parent !== 1 )
-	// 		parent =this._read (parent, result) ;
-	// 	result.props =Object.keys (result.props).map (function (elt) { return (result.props [elt]) ; }) ;
-	// 	return (result) ;
-	// }
+	readFull (dbId, includeParents) {
+		includeParents =includeParents || false ;
+		dbId =parseInt (dbId) ;
+		var result ={
+			objectid: dbId,
+			guid: this.ids [dbId],
+			properties: {},
+			parents: []
+		} ;
+		var parent =this._readFull (dbId, result) ;
+		while ( includeParents === true && parent !== null && parent !== 1 )
+			parent =this._readFull (parent, result, includeParents) ;
+		result.properties =Object.keys (result.properties).map (function (elt) { return (result.properties [elt]) ; }) ;
+		return (result) ;
+	}
 
 	read (dbId) {
 		dbId =parseInt (dbId) ;
@@ -140,33 +141,34 @@ class JsonProperties {
 		return (Promise.all (prs)) ;
 	}
 
-	// _read (dbId, result) {
-	// 	var parent =null ;
-	// 	var propStart =2 * this.offs [dbId] ;
-	// 	var propStop =(this.offs.length <= dbId + 1) ? this.avs.length : 2 * this.offs [dbId + 1] ;
-	// 	for ( var i =propStart ; i < propStop ; i +=2 ) {
-	// 		var attr =this.attrs [this.avs [i]] ;
-	// 		var key =attr [JsonProperties.iCATEGORY] + '/' + attr [JsonProperties.iNAME] ;
-	// 		if ( key === '__parent__/parent' ) {
-	// 			parent =parseInt (this.vals [this.avs [i + 1]]) ;
-	// 			result.parents.push (parent) ;
-	// 			continue ;
-	// 		}
-	// 		if ( result.props.hasOwnProperty (key) )
-	// 			continue ;
-	// 		result.props [key] ={
-	// 			category: attr [JsonProperties.iCATEGORY],
-	// 			name: attr [JsonProperties.iNAME],
-	// 			displayName: attr [JsonProperties.iDISPLAYNAME],
-	// 			type: attr [JsonProperties.iTYPE],
-	// 			value: this.vals [this.avs [i + 1]],
-	// 			unit: attr [JsonProperties.iUNIT],
-	// 			hidden: ((attr [JsonProperties.iFLAGS] & 1) == 1),
-	// 			//id: dbId,
-	// 		} ;
-	// 	}
-	// 	return (parent) ;
-	// }
+	_readFull (dbId, result, includeParents) {
+		includeParents =includeParents || false ;
+		var parent =null ;
+		var propStart =2 * this.offs [dbId] ;
+		var propStop =(this.offs.length <= dbId + 1) ? this.avs.length : 2 * this.offs [dbId + 1] ;
+		for ( var i =propStart ; i < propStop ; i +=2 ) {
+			var attr =this.attrs [this.avs [i]] ;
+			var key =attr [JsonProperties.iCATEGORY] + '/' + attr [JsonProperties.iNAME] ;
+			if ( key === '__parent__/parent' ) {
+				parent =parseInt (this.vals [this.avs [i + 1]]) ;
+				result.parents.push (parent) ;
+				continue ;
+			}
+			if ( result.properties.hasOwnProperty (key) )
+				continue ;
+			result.propertiess [key] ={
+				category: attr [JsonProperties.iCATEGORY],
+				name: attr [JsonProperties.iNAME],
+				displayName: attr [JsonProperties.iDISPLAYNAME],
+				type: attr [JsonProperties.iTYPE],
+				value: this.vals [this.avs [i + 1]],
+				unit: attr [JsonProperties.iUNIT],
+				hidden: ((attr [JsonProperties.iFLAGS] & 1) == 1),
+				//id: dbId,
+			} ;
+		}
+		return (parent) ;
+	}
 
 	_read (dbId, result) {
 		var parent =null ;
@@ -181,10 +183,16 @@ class JsonProperties {
 			// 	result.parents.push (parent) ;
 			// 	continue ;
 			// }
+			if ( key === '__instanceof__/instanceof_objid' ) {
+				// Allright, we need to read teh definition
+				this._read (parseInt (this.vals [this.avs [i + 1]]), result) ;
+				continue ;
+			}
 			if (   key === '__viewable_in__/viewable_in'
 				|| key === '__parent__/parent'
 				|| key === '__child__/child'
 				|| key === '__node_flags__/node_flags'
+				//|| key === '__instanceof__/instanceof_objid'
 			) {
 				continue ;
 			}
@@ -204,7 +212,7 @@ class JsonProperties {
 			else if ( attr [JsonProperties.iTYPE] === JsonProperties.tColor )
 				value =this.vals [this.avs [i + 1]].toString () ;
 			else if ( attr [JsonProperties.iTYPE] === JsonProperties.tNumeric )
-				value =Number.parseFloat (this.vals [this.avs [i + 1]]).toFixed (4) ;
+				value =Number.parseFloat (this.vals [this.avs [i + 1]]).toFixed (3) ;
 			else
 				value =this.vals [this.avs [i + 1]] ;
 			//result.properties [category] [key] =value ;
@@ -495,7 +503,7 @@ router.delete ('/:urn', function (req, res) {
 router.get ('/:urn/properties/*', function (req, res) {
 	var urn =utils._safeBase64encode (req.params.urn) ;
 	var outPath =utils.dataPath (urn, '') ;
-	var dbIds =req.params [0].split (',') ; // csv format
+	var dbIds =utils.csv (req.params [0]) ; // csv format
 	var compMethod =utils.accepts (req) ;
 
 	var props =new JsonProperties (urn) ;
@@ -510,7 +518,9 @@ router.get ('/:urn/properties/*', function (req, res) {
 			} ;
 			//result.dbIds.map (function (elt) {
 			dbIds.map (function (elt) {
-				json.data.collection.push (result.read (elt)) ;
+				var obj =result.read (elt) ;
+				if ( obj != null )
+					json.data.collection.push (obj) ;
 			}) ;
 			//res.json (json) ;
 

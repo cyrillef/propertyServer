@@ -99,6 +99,12 @@ which would update/install automatically via 'npm':
 
   # Get properties for several objects with Id == 1066, 1515, 1789
   curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/properties/1066,1515,1789
+
+  # Get properties for group of objects with Id between 1515 and 1531
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/properties/1515-1531
+
+  # Get properties for group of objects with Id between 1515 and 1531 and few other objects with Id == 1066, 1789
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/properties/1066,1515-1531,1789
   ```
   Note you can add the -H "Accept-Encoding: gzip" or -H "Accept-Encoding: deflate" or -H "Accept-Encoding: gzip, deflate" to compress the JSON reply.
 4. Free the resources<br />
