@@ -361,6 +361,16 @@ var utils ={
 		return ('') ;
 	},
 
+	authorization: function (req) {
+		var bearer =req.header ('Authorization') ;
+		if ( bearer === undefined )
+			return (null) ;
+		var result =bearer.match (/^Bearer\s(.*)$/) ;
+		if ( result )
+			return (result [1]) ;
+		return (null) ;
+	},
+
 	logTimeStamp: function (msg) {
 		msg =msg || '' ;
 		var date =new Date () ;

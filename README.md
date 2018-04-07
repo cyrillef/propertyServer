@@ -78,30 +78,32 @@ which would update/install automatically via 'npm':
 
 1. Get resources from your file<br />
   ```
-  curl -X GET http://localhost:3000/data/dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6Y3lyaWxsZS0yMDE3MTIwOC9BRENfSE9LX0lfRlVMTFMtbWFya2VyLm53ZA/load/
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load/
+  ```
+  Note the server, use a 2 legged definition by default, but you can override the Authorization by adding an header to the request in order
+  to use your own.
+  ```
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load/ -H "Authorization: Bearer ey9f...ks7A"
   ```
 2. Verify resources are ready<br />
   ```
-  curl -X GET http://localhost:3000/data/dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6Y3lyaWxsZS0yMDE3MTIwOC9BRENfSE9LX0lfRlVMTFMtbWFya2VyLm53ZA/load/progress
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load/progress
   ```
 3. Get properties<br />
   ```
   # Get all properties
-  curl -X GET http://localhost:3000/data/dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6Y3lyaWxsZS0yMDE3MTIwOC9BRENfSE9LX0lfRlVMTFMtbWFya2VyLm53ZA/properties/*
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/properties/*
 
   # Get properties for 1 object with Id == 1789
-  curl -X GET http://localhost:3000/data/dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6Y3lyaWxsZS0yMDE3MTIwOC9BRENfSE9LX0lfRlVMTFMtbWFya2VyLm53ZA/properties/1789
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/properties/1789
 
-  # Get properties for sevaral objects with Id == 1066, 1515, 1789
-  curl -X GET http://localhost:3000/data/dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6Y3lyaWxsZS0yMDE3MTIwOC9BRENfSE9LX0lfRlVMTFMtbWFya2VyLm53ZA/properties/1066,1515,1789
+  # Get properties for several objects with Id == 1066, 1515, 1789
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/properties/1066,1515,1789
   ```
-  Note you can add the -H "Accept-Encoding: gzip" or -H "Accept-Encoding: deflate" to compress the JSON reply.
-
-
-
+  Note you can add the -H "Accept-Encoding: gzip" or -H "Accept-Encoding: deflate" or -H "Accept-Encoding: gzip, deflate" to compress the JSON reply.
 4. Free the resources<br />
   ```
-  curl -X DELETE http://localhost:3000/data/dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6Y3lyaWxsZS0yMDE3MTIwOC9BRENfSE9LX0lfRlVMTFMtbWFya2VyLm53ZA
+  curl -X DELETE http://localhost:3000/data/dXJuO...Lm53ZA
   ```
 
 

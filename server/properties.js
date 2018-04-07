@@ -26,6 +26,7 @@ var zlib = require('zlib') ;
 var mkdirp =require ('mkdirp') ;
 var moment =require ('moment') ;
 var ForgeSDK =require ('forge-apis') ;
+var config =require ('./config') ;
 var utils =require ('./utils') ;
 var forgeToken =require ('./forge-token') ;
 
@@ -445,8 +446,16 @@ router.get ('/:urn/load', function (req, res) {
 	var urn =utils._safeBase64encode (req.params.urn) ;
 	if ( jobs.hasOwnProperty (urn) )
 		return (res.status (201).json ({ status: 'pending' })) ;
+	var bearer =utils.authorization (req) ;
+	var localForgeToken =forgeToken ;
+	if ( bearer !== null ) {
+		localForgeToken =new ForgeSDK.AuthClientTwoLegged (config.credentials.client_id, config.credentials.client_secret, config.credentials.scope) ;
+		localForgeToken.credentials.token_type ='Bearer' ;
+		localForgeToken.credentials.expires_in =3599 ;
+		localForgeToken.credentials.access_token =bearer ;
+	}
 	var outPath =utils.dataPath ('', '') ;
-	BubbleAccess.getManifest (urn, forgeToken)
+	BubbleAccess.getManifest (urn, localForgeToken)
 		.then (function (bubble) {
 			//console.log (JSON.stringify (manifest, null, 2)) ;
 			res.status (201).json ({ status: 'accepted' }) ;
@@ -456,7 +465,7 @@ router.get ('/:urn/load', function (req, res) {
 					delete jobs [urn] ;
 					return ;
 				}
-				BubbleAccess.downloadAllDerivativeFiles (result.list, outPath, forgeToken, function (flatList) {
+				BubbleAccess.downloadAllDerivativeFiles (result.list, outPath, localForgeToken, function (flatList) {
 					delete jobs [urn] ;
 				}) ;
 			}) ;
