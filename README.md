@@ -78,12 +78,12 @@ which would update/install automatically via 'npm':
 
 1. Get resources from your file<br />
   ```
-  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load/
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load
   ```
   Note the server, use a 2 legged definition by default, but you can override the Authorization by adding an header to the request in order
   to use your own.
   ```
-  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load/ -H "Authorization: Bearer ey9f...ks7A"
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load -H "Authorization: Bearer ey9f...ks7A"
   ```
 2. Verify resources are ready<br />
   ```
