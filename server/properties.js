@@ -78,6 +78,10 @@ class JsonProperties {
 	static get tString () { return (20) ; }
 	static get tString2 () { return (21) ; }
 
+	get idMax () {
+		return (this.offs.length - 1) ;
+	}
+
 	load (dbPath) {
 		var self =this ;
 		return (new Promise (function (fulfill, reject) {
@@ -192,7 +196,9 @@ class JsonProperties {
 				|| key === '__parent__/parent'
 				|| key === '__child__/child'
 				|| key === '__node_flags__/node_flags'
-				//|| key === '__instanceof__/instanceof_objid'
+				|| key === '__document__/schema_name'
+				|| key === '__document__/schema_version'
+				|| key === '__document__/is_doc_property'
 			) {
 				continue ;
 			}
@@ -215,6 +221,10 @@ class JsonProperties {
 				value =Number.parseFloat (this.vals [this.avs [i + 1]]).toFixed (3) ;
 			else
 				value =this.vals [this.avs [i + 1]] ;
+
+			if ( attr [JsonProperties.iUNIT] !== null )
+				value +=' ' + attr [JsonProperties.iUNIT] ;
+
 			//result.properties [category] [key] =value ;
 			if ( result.properties [category].hasOwnProperty (key) ) {
 				if ( !Array.isArray (result.properties [category] [key]) ) {
@@ -225,6 +235,17 @@ class JsonProperties {
 				result.properties [category] [key] =value ;
 			}
 		}
+		// Sorting objects
+		Object.keys (result.properties).sort ().every (function (cat) {
+			var r ={} ;
+			Object.keys (result.properties [cat]).sort ().every (function (elt) {
+				r [elt] =result.properties [cat] [elt] ;
+				return (true) ;
+			}) ;
+			delete result.properties [cat] ;
+			result.properties [cat] =r ;
+			return (true) ;
+		}) ;
 		return (parent) ;
 	}
 
@@ -516,7 +537,13 @@ router.get ('/:urn/properties/*', function (req, res) {
 					collection: []
 				}
 			} ;
-			//result.dbIds.map (function (elt) {
+
+			if ( dbIds.includes ('*') ) {
+				var max =result.idMax ;
+				dbIds =[] ;
+				//dbIds =Array.apply (null, { length: max }).map (Number.call, Number) ;
+				dbIds =Array.apply (null, { length: max }).map (function (e, i) { return (i + 1) ; }) ;
+			}
 			dbIds.map (function (elt) {
 				var obj =result.read (elt) ;
 				if ( obj != null )

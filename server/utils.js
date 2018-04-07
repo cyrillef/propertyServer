@@ -375,8 +375,11 @@ var utils ={
 		var dbIds =st.split (',') ; // csv format
 		dbIds =dbIds.map (function (elt) {
 			var r =elt.match (/^(\d+)-(\d+)$/) ;
-			if ( r === null )
+			if ( r === null ) {
+				if ( elt === '*' )
+					return (elt) ;
 				return (parseInt (elt)) ;
+			}
 			var t =[] ;
 			for ( var i =parseInt (r [1]) ; i <= parseInt (r [2]) ; i++ )
 				t.push (i) ;
