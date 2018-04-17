@@ -107,7 +107,8 @@ which would update/install automatically via 'npm':
   curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/properties/1066,1515-1531,1789
   ```
   Note you can add the -H "Accept-Encoding: gzip" or -H "Accept-Encoding: deflate" or -H "Accept-Encoding: gzip, deflate" to compress the JSON reply.
-4. Free the resources<br />
+  
+4. Free the resources if you do not need it any more<br />
   ```
   curl -X DELETE http://localhost:3000/data/dXJuO...Lm53ZA
   ```
