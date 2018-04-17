@@ -1,7 +1,7 @@
 {
   "name": "propertyServer",
   "version": "1.0.0",
-  "description": "Forge Model PropertyServer to workaround teh Model Derivative API limitations",
+  "description": "Forge Model PropertyServer to workaround the Model Derivative API limitations",
   "main": "start.js",
   "scripts": {
     "start": "NODE_ENV=production node start.js",
