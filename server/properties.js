@@ -445,7 +445,6 @@ class BubbleAccess {
 			})
 			.catch (function (error) {
 				console.error ('Error:', error.message) ;
-				self._errors.push ('Error: ' + error.message) ;
 				callback (error, null) ;
 			})
 		;
