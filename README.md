@@ -114,7 +114,7 @@ which would update/install automatically via 'npm':
   ```
 
 
-Helper feature: If you need to do a user authentication, you can generate a 3legged token by lauching this URL in your browser: http://localhost:3000/3legged
+Helper feature: If you need to do a user authentication, you can generate a 3legged token by launching this URL in your browser: http://localhost:3000/3legged
 
 --------
 
