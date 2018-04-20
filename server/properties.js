@@ -251,6 +251,7 @@ class JsonProperties {
 
 }
 
+var jobs ={} ;
 class BubbleAccess {
 
 	static getManifest (urn, _forgeToken) {
@@ -259,6 +260,8 @@ class BubbleAccess {
 		if ( urn === undefined || urn === null )
 			return (Promise.reject ("Missing the required parameter 'urn' when calling getManifest")) ;
 		var ModelDerivative =new ForgeSDK.DerivativesApi () ;
+		jobs [urn].status ='started' ;
+		jobs [urn].progress =0 ;
 		return (ModelDerivative.apiClient.callApi (
 			'/derivativeservice/v2/manifest/{urn}', 'GET',
 			{ 'urn': urn }, {}, { /*'Accept-Encoding': 'gzip, deflate'*/ },
@@ -347,7 +350,7 @@ class BubbleAccess {
 			processOne () ;
 	}
 
-	static downloadAllDerivativeFiles (fileList, destDir, _forgeToken, callback) {
+	static downloadAllDerivativeFiles (urn, fileList, destDir, _forgeToken, callback) {
 		var self =this ;
 		var succeeded =0 ;
 		var failed =0 ;
@@ -371,6 +374,7 @@ class BubbleAccess {
 				flatList.push (flatItem) ;
 			}
 		}
+		//console.log (JSON.stringify (flatList, null, 2)) ;
 		if ( flatList.length === 0 )
 			return (callback (failed, succeeded)) ;
 		var current =0 ;
@@ -382,16 +386,27 @@ class BubbleAccess {
 			var downloadComplete =function (error, success) {
 				done++ ;
 				if ( error ) {
+					failed++ ;
 					console.error ('Failed to download file:', fi.fileName, fi.modelURN, error) ;
 				} else {
+					succeeded++ ;
 					console.log ('Downloaded:', fi.fileName, fi.modelURN) ;
 				}
+				jobs [urn].progress =(100 * (failed + succeeded) / flatList.length) | 0 ;
+				//console.log ('Progress: ', jobs [urn].progress, '%') ;
 				if ( done === flatList.length )
 					callback (flatList) ;
 				else
 					setTimeout (downloadOneItem, 0) ;
 			} ;
-			BubbleAccess.getItem (path.join (fi.basePath, fi.fileName), path.join (fi.localPath, fi.modelURN, fi.fileName), _forgeToken, downloadComplete) ;
+			//console.log ((fi.basePath + '/' + fi.fileName).replace (/\/\//g, '/')) ;
+			//console.log (path.join (fi.localPath, fi.modelURN, fi.fileName));
+			BubbleAccess.getItem (
+				(fi.basePath + '/' + fi.fileName).replace (/\/\//g, '/'),
+				path.join (fi.localPath, fi.modelURN, fi.fileName),
+				_forgeToken,
+				downloadComplete
+			) ;
 		} ;
 		// Kick off 10 parallel jobs
 		for ( var k =0 ; k < 10 ; k++ )
@@ -429,7 +444,7 @@ class BubbleAccess {
 	static getItem (itemUrn, outFile, _forgeToken, callback) {
 		var self =this ;
 		//console.log ('-> ' + itemUrn) ;
-		BubbleAccess.downloadItem (itemUrn)
+		BubbleAccess.downloadItem (itemUrn, _forgeToken)
 			.then (function (response) {
 				if ( response.statusCode !== 200 )
 					return (callback (response.statusCode)) ;
@@ -452,16 +467,16 @@ class BubbleAccess {
 
 }
 
-var jobs ={} ;
 router.get ('/:urn/load/progress', function (req, res) {
 	var urn =utils._safeBase64encode (req.params.urn) ;
+	console.log ('jobs: ' + JSON.stringify (jobs, null, 2)) ;
 	if ( jobs.hasOwnProperty (urn) )
-		return (res.status (201).json ({ status: 'pending' })) ;
+		return (res.status (201).json (jobs [urn])) ;
 	var outPath =utils.dataPath (urn, '') ;
 	utils.fileexists (outPath)
 		.then (function (bExists) {
 			if ( bExists === true )
-				res.status (200).json ({ status: 'completed' }) ;
+				res.status (200).json ({ status: 'completed', progress: 100 }) ;
 			else
 				res.status (404).end () ;
 		})
@@ -472,8 +487,8 @@ router.get ('/:urn/load/progress', function (req, res) {
 
 router.get ('/:urn/load', function (req, res) {
 	var urn =utils._safeBase64encode (req.params.urn) ;
-	if ( jobs.hasOwnProperty (urn) )
-		return (res.status (201).json ({ status: 'pending' })) ;
+	if ( jobs.hasOwnProperty (urn) && jobs [urn].status !== 'failed' )
+		return (res.status (201).json (jobs [urn])) ;
 	var bearer =utils.authorization (req) ;
 	var localForgeToken =forgeToken ;
 	if ( bearer !== null ) {
@@ -483,23 +498,31 @@ router.get ('/:urn/load', function (req, res) {
 		localForgeToken.credentials.access_token =bearer ;
 	}
 	var outPath =utils.dataPath ('', '') ;
+	jobs [urn] ={ status: 'accepted' } ;
 	BubbleAccess.getManifest (urn, localForgeToken)
 		.then (function (bubble) {
-			//console.log (JSON.stringify (manifest, null, 2)) ;
-			res.status (201).json ({ status: 'accepted' }) ;
+			//console.log (JSON.stringify (bubble, null, 2)) ;
+			res.status (201).json (jobs [urn]) ;
 
 			BubbleAccess.listAllDerivativeFiles (bubble.body, function (error, result) {
 				if ( error !== null || result === null ) {
 					delete jobs [urn] ;
 					return ;
 				}
-				BubbleAccess.downloadAllDerivativeFiles (result.list, outPath, localForgeToken, function (flatList) {
+				//console.log (JSON.stringify (result, null, 2)) ;
+				var filesToFetch =result.list [0].files.length ;
+				//console.log ('Number of files to fetch:', filesToFetch) ;
+				jobs [urn].status ='inprogress' ;
+				jobs [urn].progress =0 ;
+				//console.log (JSON.stringify (result, null, 2)) ;
+				BubbleAccess.downloadAllDerivativeFiles (urn, result.list, outPath, localForgeToken, function (flatList) {
 					delete jobs [urn] ;
 				}) ;
 			}) ;
 		})
-		.catch (function (err) {
-			console.error (err) ;
+		.catch (function (error) {
+			console.error (error) ;
+			jobs [urn] ={ status: 'failed', error: error } ;
 			res.status (500).end () ;
 		}) ;
 }) ;

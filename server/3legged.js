@@ -17,30 +17,34 @@
 // Forge Property Server
 // by Cyrille Fauvel - Autodesk Developer Network (ADN)
 //
-'use strict';
+'use strict' ; // http://www.w3schools.com/js/js_strict.asp
 
-var fs =require ('fs') ;
-var ForgeSDK =require ('forge-apis') ;
+var express =require ('express') ;
+var request =require ('request') ;
+var url =require ('url') ;
+var querystring =require ('querystring') ;
 var config =require ('./config') ;
-var utils =require ('./utils') ;
+var forgeToken3 =require ('./forge-token3') ;
 
-var oAuth2TwoLegged =null ;
-var refreshToken =function (credentials) {
-	credentials =credentials || config.credentials ;
-	if ( oAuth2TwoLegged === null )
-		oAuth2TwoLegged =new ForgeSDK.AuthClientTwoLegged (credentials.client_id, credentials.client_secret, credentials.scope) ;
-	oAuth2TwoLegged.authenticate ()
+var router =express.Router () ;
+
+router.get ('/3legged', function (req, res) {
+	res.redirect (forgeToken3.authorizeUrl ()) ;
+}) ;
+
+var q =url.parse (config.callback, true) ;
+router.get (q.pathname, function (req, res) {
+	var qs =querystring.parse (req._parsedUrl.query) ;
+	//console.log (qs) ;
+	var code =qs.code ;
+	forgeToken3.getToken (code)
 		.then (function (response) {
-			console.log ('2legged Token ' + response.access_token) ;
-			oAuth2TwoLegged.setCredentials (response) ;
-			setTimeout (refreshToken, (response.expires_in - 300) * 1000) ; // - 5 minutes
+			console.log (JSON.stringify (response.credentials)) ;
+			res.json (response.credentials) ;
 		})
 		.catch (function (error) {
-			setTimeout (refreshToken, 2000) ; // Try again
-			console.error ('Refresh 2legged Token: ERROR! ', error) ;
-		})
-	;
-	return (oAuth2TwoLegged) ;
-} ;
+			console.error ('Getting token failed! ' + error) ;
+		}) ;
+}) ;
 
-module.exports =refreshToken () ;
+module.exports =router ;

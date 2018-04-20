@@ -27,8 +27,9 @@ var config ={
 		client_id: process.env.FORGE_CLIENT_ID || '<replace with your consumer key>',
 		client_secret: process.env.FORGE_CLIENT_SECRET || '<replace with your consumer secret>',
 		grant_type: 'client_credentials',
-		scope: [ 'data:read', 'data:search', 'bucket:read' ]
+		scope: ['data:read', 'data:search', 'bucket:read', 'viewables:read' ]
 	},
+	callback: process.env.FORGE_CALLBACK,
 	apiEndpoint: 'developer.api.autodesk.com'
 
 } ;

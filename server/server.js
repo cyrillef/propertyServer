@@ -26,6 +26,7 @@ var forgeToken =require ('./forge-token') ;
 var app =express () ;
 //app.use (bodyParser.urlencoded ({ extended: true })) ;
 app.use (bodyParser.json ()) ;
+app.use('/', require('./3legged'));
 app.use ('/data', require ('./properties')) ;
 app.set ('port', process.env.PORT || 80) ; // main port
 
