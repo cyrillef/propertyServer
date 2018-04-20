@@ -16,6 +16,10 @@
 		"FORGE_CLIENT_SECRET": {
 			"description": "Replace with your FORGE CLIENT SECRET KEY",
 			"value": "secret"
+		},
+		"FORGE_CALLBACK": {
+			"description": "Replace with your FORGE CALLBACK URL",
+			"value": ""
 		}
 	}
 }
