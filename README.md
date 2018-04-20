@@ -58,6 +58,8 @@ which would update/install automatically via 'npm':
             set FORGE_CLIENT_ID=xxx
 
             set FORGE_CLIENT_SECRET=xxx
+	    
+	    set FORGE_CALLBACK=xxx
 
             [set PORT=<port>]
 
@@ -65,7 +67,7 @@ which would update/install automatically via 'npm':
             ```
           * OSX/Linux<br />
             ```
-            [sudo] [PORT=<port>] FORGE_CLIENT_ID=xxx FORGE_CLIENT_SECRET=xxx node start.js
+            [sudo] [PORT=<port>] FORGE_CLIENT_ID=xxx FORGE_CLIENT_SECRET=xxx FORGE_CALLBACK=xxx node start.js
             ```
    <br />
    <b>Note:</b> the port argument can be omitted and default to port 80. If port 80 is already in use by another
@@ -80,8 +82,7 @@ which would update/install automatically via 'npm':
   ```
   curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load
   ```
-  Note the server, use a 2 legged definition by default, but you can override the Authorization by adding an header to the request in order
-  to use your own.
+  Note the server, use a 2 legged definition by default, but you can override the Authorization by adding an header to the request in order to use your own.
   ```
   curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load -H "Authorization: Bearer ey9f...ks7A"
   ```
@@ -114,7 +115,11 @@ which would update/install automatically via 'npm':
   ```
 
 
-Helper feature: If you need to do a user authentication, you can generate a 3legged token by launching this URL in your browser: http://localhost:3000/3legged
+### BIM360docs and 3legged support
+
+The only time you need a different token than the one generated and used by the server is when you want to access a database coming from a file stored on BIM360docs / Fusion360. In this case, you need a 3legged token which requires you to log with a user credentials. You can get teh token from your application or get help from this server as long you provisionned your keys on the service.
+
+This is where you need to define the FORGE_CALLBACK environment variable, and in your browser go to http://localhost:3000/3legged. After the login process, you should see an access_token on the page you can use to load the database resource on the propertyServer.
 
 --------
 
