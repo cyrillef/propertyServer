@@ -17,7 +17,7 @@ Visit this [page](https://developer.autodesk.com) for instructions to get on-boa
 
 ## Description
 
-The propertyServer server exercises ais a workaround to the Forge Model Derivative API limitations to [request properties](https://developer.autodesk.com/en/docs/model-derivative/v2/reference/http/urn-metadata-guid-properties-GET/).
+The propertyServer server exercises a workaround to the Forge Model Derivative API limitations to [request properties](https://developer.autodesk.com/en/docs/model-derivative/v2/reference/http/urn-metadata-guid-properties-GET/).
 It also demonstrates how to parse the bubble json.gz property files.
 
 In order to make use of this sample, you need to register your consumer and secret keys:
