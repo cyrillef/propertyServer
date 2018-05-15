@@ -345,6 +345,9 @@ var utils ={
 			code =404 ;
 			msg ='Not Found' ;
 		}
+		if ( msg === 'objID out of range!' ) {
+			code =416 ;
+		}
 		res
 		 	.status (code)
 		 	.end (msg) ;
@@ -376,7 +379,7 @@ var utils ={
 		dbIds =dbIds.map (function (elt) {
 			var r =elt.match (/^(\d+)-(\d+)$/) ;
 			if ( r === null ) {
-				if ( elt === '*' )
+				if ( elt === '*' || elt === 'range' )
 					return (elt) ;
 				return (parseInt (elt)) ;
 			}

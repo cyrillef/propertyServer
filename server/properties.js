@@ -467,6 +467,33 @@ class BubbleAccess {
 
 }
 
+function returnJsonPayload (json, compMethod, res) {
+	switch ( compMethod ) {
+		default:
+			res.json (json) ;
+			//utils.logTimeStamp (req.params.urn) ;
+			break ;
+		case 'gzip':
+		case 'deflate':
+			res.setHeader ('Content-Type', 'application/json') ;
+			res.setHeader ('Content-Encoding', compMethod) ;
+
+			var buf =new Buffer (JSON.stringify (json), 'utf-8') ;
+			if ( compMethod == 'gzip' ) {
+				zlib.gzip (buf, function (_, result) {
+					res.setHeader ('Content-Length', result.length) ;
+					res.end (result) ;
+				}) ;
+			} else {
+				zlib.deflate (buf, function (_, result) {
+					res.setHeader ('Content-Length', result.length) ;
+					res.end (result) ;
+				}) ;
+			}
+			break ;
+	}
+}
+
 router.get ('/:urn/load/progress', function (req, res) {
 	var urn =utils._safeBase64encode (req.params.urn) ;
 	console.log ('jobs: ' + JSON.stringify (jobs, null, 2)) ;
@@ -567,36 +594,59 @@ router.get ('/:urn/properties/*', function (req, res) {
 				dbIds =Array.apply (null, { length: max }).map (function (e, i) { return (i + 1) ; }) ;
 			}
 			dbIds.map (function (elt) {
+				if ( elt > result.idMax )
+					throw new Error ('objID out of range!') ;
 				var obj =result.read (elt) ;
 				if ( obj != null )
 					json.data.collection.push (obj) ;
 			}) ;
 			//res.json (json) ;
+			returnJsonPayload (json, compMethod, res) ;
+		})
+		.catch (function (err) {
+			console.error (err) ;
+			//res.status (err.code || err.statusCode).end (err.message | err.statusMessage) ;
+			utils.returnResponseError (res, err) ;
+		}) ;
+}) ;
 
-			switch ( compMethod ) {
-				default:
-					res.json (json) ;
-					//utils.logTimeStamp (req.params.urn) ;
-					break ;
-				case 'gzip':
-				case 'deflate':
-					res.setHeader ('Content-Type', 'application/json') ;
-					res.setHeader ('Content-Encoding', compMethod) ;
+router.get ('/:urn/ids/*', function (req, res) {
+	var urn =utils._safeBase64encode (req.params.urn) ;
+	var outPath =utils.dataPath (urn, '') ;
+	var dbIds =utils.csv (req.params [0]) ; // csv format
+	var compMethod =utils.accepts (req) ;
 
-					var buf =new Buffer (JSON.stringify (json), 'utf-8') ;
-					if ( compMethod == 'gzip' ) {
-						zlib.gzip (buf, function (_, result) {
-							res.setHeader ('Content-Length', result.length) ;
-							res.end (result) ;
-						}) ;
-					} else {
-						zlib.deflate (buf, function (_, result) {
-							res.setHeader ('Content-Length', result.length) ;
-							res.end (result) ;
-						}) ;
+	var props =new JsonProperties (urn) ;
+	//props.dbIds =dbIds ;
+	props.load (outPath)
+		.then (function (result) {
+			var json ={
+				data: {
+					type: "ids",
+					collection: []
+				}
+			} ;
+
+			if ( dbIds.includes ('range') ) {
+				dbIds =[] ;
+				json.idMax =result.idMax ;
 					}
-					break ;
+			if ( dbIds.includes ('*') ) {
+				var max =result.idMax ;
+				dbIds =[] ;
+				//dbIds =Array.apply (null, { length: max }).map (Number.call, Number) ;
+				dbIds =Array.apply (null, { length: max }).map (function (e, i) { return (i + 1) ; }) ;
 			}
+			dbIds.map (function (elt, index) {
+				if ( elt > result.idMax )
+					throw new Error ('objID out of range!') ;
+				//json.data.collection.push (result.ids [elt]) ;
+				var obj ={ dbId: elt, externalID: result.ids [elt] } ;
+				json.data.collection.push (obj) ;
+			}) ;
+
+			//res.json (json) ;
+			returnJsonPayload (json, compMethod, res) ;
 		})
 		.catch (function (err) {
 			console.error (err) ;

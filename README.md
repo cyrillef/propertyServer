@@ -90,7 +90,28 @@ which would update/install automatically via 'npm':
   ```
   curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/load/progress
   ```
-3. Get properties<br />
+3. Get IDs and ExternalIDs
+  ```
+  # Get the highest ID
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/ids/range
+
+  # Get all externalIDs
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/ids/*
+
+  # Get externalIDs for 1 object with Id == 1789
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/ids/1789
+
+  # Get externalIDs for several objects with Id == 1066, 1515, 1789
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/ids/1066,1515,1789
+
+  # Get externalIDs for group of objects with Id between 1515 and 1531
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/ids/1515-1531
+
+  # Get externalIDs for group of objects with Id between 1515 and 1531 and few other objects with Id == 1066, 1789
+  curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/ids/1066,1515-1531,1789
+
+  ```
+4. Get properties<br />
   ```
   # Get all properties
   curl -X GET http://localhost:3000/data/dXJuO...Lm53ZA/properties/*
