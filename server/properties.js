@@ -590,7 +590,7 @@ router.get ('/:urn/properties/*', function (req, res) {
 			if ( dbIds.includes ('*') ) {
 				var max =result.idMax ;
 				dbIds =[] ;
-				// can become a problem if the size is too big
+				// can become a problem if the size is too big (call stack)
 				//dbIds =Array.apply (null, { length: max }).map (function (e, i) { return (i + 1) ; }) ;
 				for ( var i =1 ; i <= max ; i++ )
 					dbIds.push (i) ;
@@ -637,7 +637,10 @@ router.get ('/:urn/ids/*', function (req, res) {
 				var max =result.idMax ;
 				dbIds =[] ;
 				//dbIds =Array.apply (null, { length: max }).map (Number.call, Number) ;
-				dbIds =Array.apply (null, { length: max }).map (function (e, i) { return (i + 1) ; }) ;
+				// can become a problem if the size is too big (call stack)
+				//dbIds =Array.apply (null, { length: max }).map (function (e, i) { return (i + 1) ; }) ;
+				for ( var i =1 ; i <= max ; i++ )
+					dbIds.push (i) ;
 			}
 			dbIds.map (function (elt, index) {
 				if ( elt > result.idMax )
