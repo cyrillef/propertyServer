@@ -211,7 +211,9 @@ class JsonProperties {
 			if ( !result.properties.hasOwnProperty (category) )
 				result.properties [category] ={} ;
 
-			key =attr [JsonProperties.iDISPLAYNAME] ;
+            if (key !== 'Identity Data/ibcGUID') {
+                key =attr [JsonProperties.iDISPLAYNAME] ;
+            }
 			var value ='' ;
 			if ( attr [JsonProperties.iTYPE] === JsonProperties.tBoolean )
 				value =this.vals [this.avs [i + 1]] === 0 ? 'No' : 'Yes' ;
@@ -232,7 +234,13 @@ class JsonProperties {
 				}
 				result.properties [category] [key].push (value) ;
 			} else {
-				result.properties [category] [key] =value ;
+                if (!['', ' ', null, undefined].includes(value)) {
+                    if (attr[0] === 'ibcGUID'){
+                        result.properties[category][attr[0]] = value;
+                    } else {
+                        result.properties [category] [key] =value ;
+                    }
+                }
 			}
 		}
 		// Sorting objects
